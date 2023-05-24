@@ -8,10 +8,10 @@ import (
 	"net/netip"
 )
 
-func GetIpv6(ctx context.Context) (string, error) {
+func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	as, err := net.InterfaceAddrs()
 	if err != nil {
-		return "", fmt.Errorf("GetIpv6: %w", err)
+		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
 	ipv6s := []netip.Addr{}
 	for _, v := range as {
@@ -23,21 +23,21 @@ func GetIpv6(ctx context.Context) (string, error) {
 		ipv6s = append(ipv6s, ip)
 	}
 	if len(ipv6s) == 0 {
-		return "", fmt.Errorf("GetIpv6: %w", ErrNotIpv6)
+		return nil, fmt.Errorf("GetIpv6: %w", ErrNotIpv6)
 	}
 
 	outIP, err := getOutIpv6()
 	if err != nil {
-		return "", fmt.Errorf("GetIpv6: %w", err)
+		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
 	if len(ipv6s) > 1 {
 		for _, v := range ipv6s {
 			if v != outIP {
-				ipv6s = []netip.Addr{v}
+				ipv6s = append(ipv6s, v)
 			}
 		}
 	}
-	return ipv6s[0].String(), nil
+	return ipv6s, nil
 }
 
 var ErrNotIpv6 = errors.New("ErrNotIpv6")

@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net/netip"
 	"os"
 	"time"
 
@@ -65,19 +66,24 @@ func doSome(cxt context.Context, cftoken string) {
 	}
 
 	r := records[0]
-	if r.Content == ip {
-		return
+	rip := netip.MustParseAddr(r.Content)
+
+	for _, v := range ip {
+		if v == rip {
+			return
+		}
 	}
+	nip := ip[0].String()
 
 	err = capi.UpdateDNSRecord(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{
 		Type:    "AAAA",
 		Name:    domain,
-		Content: ip,
+		Content: nip,
 		ID:      r.ID,
 	})
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println(domain, "已修改为", ip)
+	log.Println(domain, "已修改为", nip)
 }
