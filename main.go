@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/joho/godotenv"
-	"github.com/xmdhs/ddns-ipv6/ipv6"
+	"github.com/xmdhs/ddns-ipv6/ipv6stun"
 )
 
 var (
@@ -59,7 +59,7 @@ func doSome(cxt context.Context, cftoken string) {
 		panic("没有找到这个域名")
 	}
 
-	ip, err := ipv6.GetIpv6(cxt)
+	ip, err := ipv6stun.GetIpv6(cxt)
 	if err != nil {
 		log.Println(err)
 		return
@@ -75,7 +75,7 @@ func doSome(cxt context.Context, cftoken string) {
 	}
 	nip := ip[0].String()
 
-	err = capi.UpdateDNSRecord(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{
+	_, err = capi.UpdateDNSRecord(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{
 		Type:    "AAAA",
 		Name:    domain,
 		Content: nip,
