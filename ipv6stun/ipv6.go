@@ -39,7 +39,7 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
 	if errr != nil {
-		return nil, fmt.Errorf("GetIpv6: %w", err)
+		return nil, fmt.Errorf("GetIpv6: %w", errr)
 	}
 	return []netip.Addr{netip.MustParseAddr(xorAddr.IP.String())}, nil
 }
