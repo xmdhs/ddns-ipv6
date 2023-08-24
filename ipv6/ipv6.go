@@ -30,14 +30,20 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
+	p := netip.PrefixFrom(outIP, 64)
+
+	nipv6 := []netip.Addr{}
 	if len(ipv6s) > 1 {
 		for _, v := range ipv6s {
-			if v != outIP {
-				ipv6s = append(ipv6s, v)
+			if v != outIP && p.Contains(v) {
+				nipv6 = append(nipv6, v)
 			}
 		}
 	}
-	return ipv6s, nil
+	if len(nipv6) == 0 {
+		nipv6 = append(nipv6, outIP)
+	}
+	return nipv6, nil
 }
 
 var ErrNotIpv6 = errors.New("ErrNotIpv6")
