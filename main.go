@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"net/netip"
 	"os"
@@ -20,13 +21,15 @@ var (
 	domain  string
 	zoneID  string
 	gettype string
+	test    bool
 )
 
 func init() {
 	flag.StringVar(&wlanIP, "w", "", "")
 	flag.StringVar(&domain, "d", "", "")
 	flag.StringVar(&zoneID, "z", "", "")
-	flag.StringVar(&zoneID, "t", "netlink", "")
+	flag.StringVar(&gettype, "t", "netlink", "")
+	flag.BoolVar(&test, "test", false, "")
 	flag.Parse()
 }
 
@@ -35,18 +38,29 @@ func main() {
 	cftoken := os.Getenv("cf_token")
 	cxt := context.Background()
 
+	var f func(ctx context.Context) ([]netip.Addr, error)
+	switch gettype {
+	case "stun":
+		f = ipv6stun.GetIpv6
+	case "interface":
+		f = ipv6.GetIpv6
+	case "netlink":
+		f = netlink.GetIpv6
+	}
+
+	if test {
+		ips, err := f(cxt)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(ips)
+	}
+
 	if gettype == "netlink" {
 		netlink.Subscribe(cxt, func() {
-			doSome(cxt, cftoken, netlink.GetIpv6)
+			doSome(cxt, cftoken, f)
 		})
 	} else {
-		var f func(ctx context.Context) ([]netip.Addr, error)
-		switch gettype {
-		case "stun":
-			f = ipv6stun.GetIpv6
-		case "interface":
-			f = ipv6.GetIpv6
-		}
 		func() {
 			cxt, c := context.WithTimeout(cxt, 2*time.Minute)
 			defer c()
@@ -83,12 +97,10 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 
 	r := records[0]
 	rip := netip.MustParseAddr(r.Content)
-
-	for _, v := range ip {
-		if v == rip {
-			return
-		}
+	if ip[0] == rip {
+		return
 	}
+
 	nip := ip[0].String()
 
 	_, err = capi.UpdateDNSRecord(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{
