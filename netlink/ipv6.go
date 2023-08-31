@@ -29,7 +29,7 @@ func Subscribe(ctx context.Context, f func()) error {
 	return nil
 }
 
-const IFA_F_SECONDARY = 0x01
+const IFA_F_TEMPORARY = 0x01
 
 func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	r, err := netlink.RouteGet(net.ParseIP("2001:4860:4860::8844"))
@@ -54,7 +54,7 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	})
 
 	for _, v := range addr {
-		if v.Flags&IFA_F_SECONDARY != 0 {
+		if v.Flags&IFA_F_TEMPORARY != 0 {
 			continue
 		}
 		ip, err := netip.ParseAddr(v.IP.String())
