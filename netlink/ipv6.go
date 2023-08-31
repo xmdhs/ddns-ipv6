@@ -43,7 +43,7 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
-	addr, err := netlink.AddrList(link, 6)
+	addr, err := netlink.AddrList(link, netlink.FAMILY_V6)
 	if err != nil {
 		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
