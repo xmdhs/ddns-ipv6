@@ -61,7 +61,9 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 		if err != nil {
 			panic(err)
 		}
-		raddr = append(raddr, ip)
+		if ip.IsGlobalUnicast() {
+			raddr = append(raddr, ip)
+		}
 	}
 	return raddr, nil
 }
