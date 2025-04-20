@@ -57,6 +57,7 @@ func main() {
 		fmt.Println(ips)
 	}
 
+	retrySetDns(cxt, cftoken, f)
 	if gettype == "netlink" {
 		netlink.Subscribe(cxt, func() {
 			retrySetDns(cxt, cftoken, f)
