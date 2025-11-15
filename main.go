@@ -127,7 +127,7 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 	}
 
 	records, _, err := capi.ListDNSRecords(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{
-		Name: domain,
+		Name: d,
 		Type: t,
 	})
 	if err != nil {
