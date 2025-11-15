@@ -71,7 +71,7 @@ func main() {
 				func() {
 					cxt, c := context.WithTimeout(cxt, 2*time.Minute)
 					defer c()
-					ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, true, ipv4)
+					ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, false, ipv4)
 					time.Sleep(1 * time.Minute)
 				}()
 			}
