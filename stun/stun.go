@@ -9,9 +9,13 @@ import (
 	"github.com/pion/stun"
 )
 
-func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
+func GetIp(ctx context.Context, ipv6 bool) ([]netip.Addr, error) {
 	d := net.Dialer{}
-	sc, err := d.DialContext(ctx, "udp6", "stun.cloudflare.com:3478")
+	network := "udp4"
+	if ipv6 {
+		network = "udp6"
+	}
+	sc, err := d.DialContext(ctx, network, "stun.cloudflare.com:3478")
 	if err != nil {
 		return nil, fmt.Errorf("GetIpv6: %w", err)
 	}
