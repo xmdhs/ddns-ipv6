@@ -120,8 +120,10 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 	}
 
 	t := "A"
+	d := domain4
 	if ipv6 {
 		t = "AAAA"
+		d = domain
 	}
 
 	records, _, err := capi.ListDNSRecords(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{
@@ -145,14 +147,14 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 
 	_, err = capi.UpdateDNSRecord(cxt, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{
 		Type:    t,
-		Name:    domain,
+		Name:    d,
 		Content: nip,
 		ID:      r.ID,
 	})
 	if err != nil {
 		return netip.Addr{}, err
 	}
-	log.Println(domain, "已修改为", nip)
+	log.Println(d, "已修改为", nip)
 	return ip[0], nil
 }
 
