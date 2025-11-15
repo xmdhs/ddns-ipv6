@@ -65,15 +65,17 @@ func main() {
 	}
 
 	if domain4 != "" {
-		ipv4 := netip.Addr{}
-		for {
-			func() {
-				cxt, c := context.WithTimeout(cxt, 2*time.Minute)
-				defer c()
-				ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, true, ipv4)
-				time.Sleep(1 * time.Minute)
-			}()
-		}
+		go func() {
+			ipv4 := netip.Addr{}
+			for {
+				func() {
+					cxt, c := context.WithTimeout(cxt, 2*time.Minute)
+					defer c()
+					ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, true, ipv4)
+					time.Sleep(1 * time.Minute)
+				}()
+			}
+		}()
 	}
 
 	ipv6 := retrySetDns(cxt, cftoken, f, true, netip.Addr{})

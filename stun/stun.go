@@ -1,4 +1,4 @@
-package ipv6stun
+package stun
 
 import (
 	"context"
