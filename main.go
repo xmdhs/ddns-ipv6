@@ -64,24 +64,14 @@ func main() {
 		fmt.Println(ips)
 	}
 
-	if domain4 != "" {
-		go func() {
-			ipv4 := netip.Addr{}
-			for {
-				func() {
-					cxt, c := context.WithTimeout(cxt, 2*time.Minute)
-					defer c()
-					ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, false, ipv4)
-					time.Sleep(1 * time.Minute)
-				}()
-			}
-		}()
-	}
-
 	ipv6 := retrySetDns(cxt, cftoken, f, true, netip.Addr{})
+	ipv4 := netip.Addr{}
 	if gettype == "netlink" {
 		netlink.Subscribe(cxt, func() {
 			ipv6 = retrySetDns(cxt, cftoken, f, true, ipv6)
+			if domain4 != "" {
+				ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, false, ipv4)
+			}
 		})
 	} else {
 		for {
@@ -89,6 +79,9 @@ func main() {
 				cxt, c := context.WithTimeout(cxt, 2*time.Minute)
 				defer c()
 				ipv6 = retrySetDns(cxt, cftoken, f, true, ipv6)
+				if domain4 != "" {
+					ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, false, ipv4)
+				}
 				time.Sleep(1 * time.Minute)
 			}()
 		}
