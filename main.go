@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/avast/retry-go/v4"
+	"github.com/avast/retry-go/v5"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/joho/godotenv"
 	"github.com/xmdhs/ddns-ipv6/ipv6"
@@ -89,9 +89,9 @@ func main() {
 }
 
 func retrySetDns(cxt context.Context, cftoken string, getfunc func(ctx context.Context) ([]netip.Addr, error), ipv6 bool, oldIp netip.Addr) netip.Addr {
-	ip, err := retry.DoWithData[netip.Addr](func() (netip.Addr, error) {
+	ip, err := retrier.Do(func() (netip.Addr, error) {
 		return doSome(cxt, cftoken, getfunc, ipv6, oldIp)
-	}, retryOpts...)
+	})
 	if err != nil {
 		log.Println(err)
 	}
@@ -151,10 +151,11 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 	return ip[0], nil
 }
 
-var retryOpts = []retry.Option{
-	retry.Attempts(0),
+var retrier = retry.NewWithData[netip.Addr](
+	retry.UntilSucceeded(),
 	retry.LastErrorOnly(true),
+	retry.MaxDelay(3*time.Minute),
 	retry.OnRetry(func(n uint, err error) {
 		log.Printf("retry %d: %v", n, err)
 	}),
-}
+)

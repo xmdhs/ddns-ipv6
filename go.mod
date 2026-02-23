@@ -3,7 +3,7 @@ module github.com/xmdhs/ddns-ipv6
 go 1.20
 
 require (
-	github.com/avast/retry-go/v4 v4.7.0
+	github.com/avast/retry-go/v5 v5.0.0
 	github.com/cloudflare/cloudflare-go v0.68.0
 	github.com/joho/godotenv v1.5.1
 	github.com/vishvananda/netlink v1.1.0
