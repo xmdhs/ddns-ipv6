@@ -30,7 +30,11 @@ func GetIp(ctx context.Context, ipv6 bool) ([]netip.Addr, error) {
 	var xorAddr stun.XORMappedAddress
 	var errr error
 
-	if err = c.Do(stun.MustBuild(stun.TransactionID, stun.BindingRequest), func(res stun.Event) {
+	msg, err := stun.Build(stun.TransactionID, stun.BindingRequest)
+	if err != nil {
+		return nil, fmt.Errorf("构建 STUN 消息失败：%w", err)
+	}
+	if err = c.Do(msg, func(res stun.Event) {
 		if res.Error != nil {
 			errr = res.Error
 			return
@@ -45,5 +49,9 @@ func GetIp(ctx context.Context, ipv6 bool) ([]netip.Addr, error) {
 	if errr != nil {
 		return nil, fmt.Errorf("GetIpv6: %w", errr)
 	}
-	return []netip.Addr{netip.MustParseAddr(xorAddr.IP.String())}, nil
+	ip, err := netip.ParseAddr(xorAddr.IP.String())
+	if err != nil {
+		return nil, fmt.Errorf("解析 STUN IP 失败：%w", err)
+	}
+	return []netip.Addr{ip}, nil
 }

@@ -15,7 +15,10 @@ func GetIpv6(ctx context.Context) ([]netip.Addr, error) {
 	}
 	ipv6s := []netip.Addr{}
 	for _, v := range as {
-		p := netip.MustParsePrefix(v.String())
+		p, err := netip.ParsePrefix(v.String())
+		if err != nil {
+			return nil, fmt.Errorf("解析地址前缀失败：%w", err)
+		}
 		ip := p.Addr()
 		if !ip.Is6() || !ip.IsGlobalUnicast() || ip.IsPrivate() || ip.IsMulticast() {
 			continue
@@ -54,5 +57,9 @@ func getOutIpv6() (netip.Addr, error) {
 		return netip.Addr{}, fmt.Errorf("getLocal: %w", err)
 	}
 	defer l.Close()
-	return netip.MustParseAddrPort(l.LocalAddr().String()).Addr(), nil
+	addr, err := netip.ParseAddrPort(l.LocalAddr().String())
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("解析本地地址失败：%w", err)
+	}
+	return addr.Addr(), nil
 }

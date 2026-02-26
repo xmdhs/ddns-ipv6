@@ -103,6 +103,9 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 	if err != nil {
 		return netip.Addr{}, err
 	}
+	if len(ip) == 0 {
+		return netip.Addr{}, fmt.Errorf("未获取到 IP 地址")
+	}
 	if ip[0] == oldIp {
 		return ip[0], nil
 	}
@@ -127,11 +130,14 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 		return netip.Addr{}, err
 	}
 	if len(records) < 1 {
-		panic("没有找到这个域名")
+		return netip.Addr{}, fmt.Errorf("没有找到域名：%s", d)
 	}
 
 	r := records[0]
-	rip := netip.MustParseAddr(r.Content)
+	rip, err := netip.ParseAddr(r.Content)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("解析 DNS 记录 IP 失败：%w", err)
+	}
 	if ip[0] == rip {
 		return netip.Addr{}, nil
 	}
