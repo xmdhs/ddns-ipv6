@@ -67,12 +67,15 @@ func main() {
 	ipv6 := retrySetDns(cxt, cftoken, f, true, netip.Addr{})
 	ipv4 := netip.Addr{}
 	if gettype == "netlink" {
-		netlink.Subscribe(cxt, func() {
+		err := netlink.Subscribe(cxt, func() {
 			ipv6 = retrySetDns(cxt, cftoken, f, true, ipv6)
 			if domain4 != "" {
 				ipv4 = retrySetDns(cxt, cftoken, func(ctx context.Context) ([]netip.Addr, error) { return s.GetIp(cxt, false) }, false, ipv4)
 			}
 		})
+		if err != nil {
+			panic(err)
+		}
 	} else {
 		for {
 			func() {
@@ -139,7 +142,7 @@ func doSome(cxt context.Context, cftoken string, getfunc func(ctx context.Contex
 		return netip.Addr{}, fmt.Errorf("解析 DNS 记录 IP 失败：%w", err)
 	}
 	if ip[0] == rip {
-		return netip.Addr{}, nil
+		return rip, nil
 	}
 
 	nip := ip[0].String()
